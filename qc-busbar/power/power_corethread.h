@@ -78,6 +78,13 @@ protected:
     void autoSetAddress();
     QString trans(int index);
 
+
+    void clearObjVolCur(sObjData *);
+    bool tryReadVolCur(sObjData *,int id);
+    bool VolCurCtrl(sObjData *,int id);
+    bool tryReadVolCurSig(sObjData *,int id);
+    bool VolCurCtrlSigle(sObjData *,int id);
+    bool handleBasicType();
 private:
     Power_Logs *mLogs;
     Power_DevRead *mRead;

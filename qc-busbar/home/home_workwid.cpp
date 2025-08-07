@@ -307,6 +307,10 @@ void Home_WorkWid::updateWid()
         mPro->dev_name = tr("母线槽"); ePro->dev_name = tr("Busway");
         break;
     }
+    case 3: {
+        mPro->dev_name = tr("基本型"); ePro->dev_name = tr("Basic type");
+        break;
+    }
     default:
         break;
     }

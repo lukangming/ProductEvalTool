@@ -64,6 +64,9 @@ bool Rk_Serial::readPacket1(sRkItem &it)
     bool ret = true;
     static uchar recv1[1024] = {0};
     static uchar recv2[2048] = {0};
+
+    mModbus->init(mSerial);
+
     int len = mModbus->read(item1,recv1);
     if(len > 0) {
         QByteArray array((char *)recv1, len);
