@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/image">
+        <file>logo.jpg</file>
+        <file>box_back.jpg</file>
+        <file>title_back.jpg</file>
+        <file>titlebar.jpg</file>
+        <file>resultpix.jpg</file>
+        <file>ploa.jpg</file>
+        <file>cur_test.jpg</file>
+        <file>vol_test.jpg</file>
+        <file>serial.jpg</file>
+        <file>isd_test.png</file>
+    </qresource>
+</RCC>
