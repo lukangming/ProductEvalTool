@@ -59,10 +59,9 @@ enum sTestStep{
 
 };
 enum sTestFile{
-
+    GNDFile = 1,
     ACWFile = 1,
     IRFile = 2,
-    GNDFile = 3,
     ACWFile_MAL
 
 };
@@ -281,6 +280,9 @@ struct sObjData
     int size;
     sDataUnit vol; // 电压
     sDataUnit cur; // 电流
+
+    uint source_vol[DEV_NUM];// 负载电压
+    uint source_cur[DEV_NUM];// 负载电流
 
     uint pow[PACK_ARRAY_SIZE]; // 功率
     uint ele[PACK_ARRAY_SIZE]; // 电能

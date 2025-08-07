@@ -68,7 +68,7 @@ bool Rk_Serial::readPacket1(sRkItem &it)
     if(len > 0) {
         QByteArray array((char *)recv1, len);
         QDataStream rxStream(array);
-        rxStream.setByteOrder(QDataStream::LittleEndian);
+        //rxStream.setByteOrder(QDataStream::LittleEndian);
         rxStream >> it.vola[0] >> it.vola[1] >>it.vola[2]
                 >> it.cura[0] >> it.cura[1] >> it.cura[2];
     } else ret = false;
@@ -77,7 +77,7 @@ bool Rk_Serial::readPacket1(sRkItem &it)
     if(len > 0) {
         QByteArray array((char *)recv2, len);
         QDataStream rxStream(array);
-        rxStream.setByteOrder(QDataStream::LittleEndian);
+        //rxStream.setByteOrder(QDataStream::LittleEndian);
         rxStream >> it.powa[0] >> it.powa[1] >> it.powa[2];
     } else ret = false;
 

@@ -76,9 +76,10 @@ bool Power_DevRead::readDevBus()
                 QString str = mIpSnmp->readBreakValue();
                 if(str == "2")
                 {
-                    str = tr("光栅告警，附近请勿站人！"); mLogs->updatePro(str, false);
+                     str = tr("光栅告警，附近请勿站人！"); mLogs->updatePro(str, false);
                     ret = false;
-                }else if(str == "1"){
+                }else if(str == "1")
+                {
                     // str = tr("防雷状态正常"); mLogs->updatePro(str, true);
                     ret = true;
                 }
@@ -224,19 +225,18 @@ QString Power_DevRead::trans(int index)
     return str;
 }
 
-bool Power_DevRead::NineInsertOne_CtrlOne(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertOne_CtrlOne()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("关闭负载输入端L1");  //三相九路电流、功率
     QString str3; QString str4 = tr("插座1电流检查");
-    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2);//K1 K2 //L1 ON L2 L3 OFF
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1)
     {
@@ -246,7 +246,7 @@ bool Power_DevRead::NineInsertOne_CtrlOne(Test_TransThread *trans_ctrl)
             Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
         }
         a = Obj->cur.status[0]; b = Obj->cur.status[1]; c = Obj->cur.status[2];
-        if(a &&(!b) &&(!c)) {
+        if((!a) &&b &&c) {
             ret = true;
             for(int i =0;i<loop;i++)
             {
@@ -287,19 +287,18 @@ bool Power_DevRead::NineInsertOne_CtrlOne(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::NineInsertOne_CtrlTwo(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertOne_CtrlTwo()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L2，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("打开负载输入端L1，关闭负载输入端L2");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L2 and check that the reading of B current is 0A and A/C current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2+64);//K1 K2 K7 //L1 L3 ON L2 OFF
 
     while(1)
     {
@@ -349,81 +348,18 @@ bool Power_DevRead::NineInsertOne_CtrlTwo(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::Insert_NoneOutput(Test_TransThread *trans_ctrl, int index)
-{
-    bool ret = true; int flag = 0; QString str1;
-    sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
-    uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("断开负载输出端%1，检查读取A/B/C电流为0A").arg(index);
-    QString str = tr("关闭负载输出端%1 L1/L2/L3").arg(index);
-    emit StepSig(str); //emit CurImageSig(2);
-    QString str3; QString str4 = tr("插座%1电流检查").arg(index);
-    QString eng2 = tr("Disconnect the load output breaker%1 and check that the reading of A/B/C current is 0A").arg(index);
-    QString eng3;
-    QString eng4 = tr("Socket %1 current check").arg(index);
-    trans_ctrl->sendCtrlGnd(1+32+64);//K1 K2 K6//L1 L2 ON L3 OFF
-
-    while(1)
-    {
-        int a=0, b=0, c = 0;
-        ret = readData();
-
-        a = Obj->cur.value[0+3*(index-1)]; b = Obj->cur.value[1+3*(index-1)]; c = Obj->cur.value[2+3*(index-1)];
-        if((!c)&&(!b)&&(!a)) {
-            ret = true;
-            for(int i =0;i<loop;i++)
-            {
-                QString temp = trans(i);
-                str = tr("%1电流%2A，").arg(temp).arg(QString::number((Obj->cur.value[i]/COM_RATE_CUR),'f',3));
-                str3 = tr("%1 current %2A，").arg(temp).arg(QString::number((Obj->cur.value[i]/COM_RATE_CUR),'f',3));
-                str1 += str; eng3 += str3;
-            }
-            mLogs->updatePro(str1, ret); str = tr("输出口%1-无底数检测成功 ").arg(index);mLogs->updatePro(str, ret);
-            mLogs->writeData(str2, str1, str4, ret); mLogs->writeDataEng(eng2,eng3,eng4,ret);
-            str1.clear(); break;
-
-        }
-        if(flag >70) {
-            str = tr("电流有底数");
-            emit StepSig(str);
-        }
-
-        flag++;
-        if(flag >90) {
-            for(int i =0;i<loop;i++)
-            {
-                QString temp = trans(i);
-                str = tr("%1电流%2A，").arg(temp).arg(QString::number((Obj->cur.value[i]/COM_RATE_CUR),'f',3));
-                str3 = tr("%1 current %2A，").arg(temp).arg(QString::number((Obj->cur.value[i]/COM_RATE_CUR),'f',3));
-                str1 += str; eng3 += str3;
-            }
-            mLogs->updatePro(str1, ret); ret = false;
-            str = tr("输出口%1-%2检测失败,有底数").arg(index).arg(str1);
-            mLogs->updatePro(str, ret);
-
-            mLogs->writeData(str2, str1, str4, ret); mLogs->writeDataEng(eng2,eng3,eng4,ret);
-            str1.clear(); break;
-        }
-    }
-
-    sleep(3);
-
-    return ret;
-}
-
-bool Power_DevRead::NineInsertOne_CtrlThree(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertOne_CtrlThree()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L3，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("打开负载输入端L2，关闭负载输入端L3");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L3 and check that the reading of C current is 0A and A/B current is normal");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2+32);//K1 K2 K6//L1 L2 ON L3 OFF
 
     while(1)
     {
@@ -470,8 +406,7 @@ bool Power_DevRead::NineInsertOne_CtrlThree(Test_TransThread *trans_ctrl)
         }
     }
     str = tr("打开负载输入端L3");
-    emit StepSig(str); //trans_ctrl->sendCtrlGnd(1+2+32+64);//K1 K2 K6 K7
-    sleep(3);
+    emit StepSig(str); sleep(3);
 
     return ret;
 }
@@ -542,18 +477,17 @@ bool Power_DevRead::NineInsertOne_BreakerOne()
     return ret;
 }
 
-bool Power_DevRead::NineInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertTwo_CtrlOne()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座2接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座2接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("请准备输出口2，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+4+32+64);//K1 K3 K6 K7 //L1 L2 L3 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     QString str3; QString str4 = tr("插座2电流检查");
-    QString eng2 = tr("Connect output socket 2 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 2 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 2 current check");
 
@@ -576,15 +510,13 @@ bool Power_DevRead::NineInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
             break;
         }
     }
-    QString str5 = tr("请检测输出口2位置的极性测试是否合格?");////
+    QString str5 = tr("请检测输出口2位置的极性测试是否合格?");
     // emit PloarSig(str3);
-    emit StepSig(str5); //emit CurImageSig(1);
-    sleep(5);
+    emit StepSig(str5); emit CurImageSig(1); sleep(5);
 
     flag = 0;
     str = tr("关闭负载输入端L1");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+4);//K1 K3
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1)
     {
@@ -594,7 +526,7 @@ bool Power_DevRead::NineInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
             Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
         }
         a = Obj->cur.status[3]; b = Obj->cur.status[4]; c = Obj->cur.status[5];
-        if(a &&(!b) &&(!c)) {
+        if((!a) &&b &&c) {
             ret = true;
             for(int i =0;i<loop;i++)
             {
@@ -634,16 +566,14 @@ bool Power_DevRead::NineInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::NineInsertTwo_CtrlTwo(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertTwo_CtrlTwo()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L2，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("打开负载输入端L1，关闭负载输入端L2");
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+4+64);//K1 K3 K7//L1 L3 ON L2 OFF
-
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座2电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L2 and check that the reading of B current is 0A and A/C current is normal;");
     QString eng3;
@@ -698,15 +628,14 @@ bool Power_DevRead::NineInsertTwo_CtrlTwo(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::NineInsertTwo_CtrlThree(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertTwo_CtrlThree()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L3，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("打开负载输入端L2，关闭负载输入端L3");
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+4+32);//K1 K3 K6//L1 L2 ON L3 OFF
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座2电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L3, check that the reading of C current is 0A, and the A/B current is normal;");
     QString eng3;
@@ -829,18 +758,17 @@ bool Power_DevRead::NineInsertOne_BreakerTwo()
     return ret;
 }
 
-bool Power_DevRead::NineInsertThree_CtrlOne(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertThree_CtrlOne()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座3接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座3接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("请准备输出口3，打开负载输入端L1、L2、L3");
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+8+32+64);//K1 K4 K6 K7//L1 L2 L3 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     QString str3; QString str4 = tr("插座3电流检查");
-    QString eng2 = tr("Connect output socket 3 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 3 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 3 current check");
 
@@ -865,12 +793,10 @@ bool Power_DevRead::NineInsertThree_CtrlOne(Test_TransThread *trans_ctrl)
     }
     QString str5 = tr("请检测输出口3位置的极性测试是否合格?");
     // emit PloarSig(str5);
-    emit StepSig(str5); //emit CurImageSig(1);
-    sleep(5);
+    emit StepSig(str5); emit CurImageSig(1); sleep(5);
     flag = 0;
     str = tr("关闭负载输入端L1");
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+8);//K1 K4//L1 ON L2 L3 OFF
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1)
     {
@@ -880,7 +806,7 @@ bool Power_DevRead::NineInsertThree_CtrlOne(Test_TransThread *trans_ctrl)
             Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
         }
         a = Obj->cur.status[6]; b = Obj->cur.status[7]; c = Obj->cur.status[8];
-        if(a &&(!b) &&(!c)) {
+        if((!a) &&b &&c) {
             ret = true;
             for(int i =0;i<loop;i++)
             {
@@ -920,19 +846,18 @@ bool Power_DevRead::NineInsertThree_CtrlOne(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::NineInsertThree_CtrlTwo(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertThree_CtrlTwo()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L2，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("打开负载输入端L1，关闭负载输入端L2");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座3电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L2 and check that the reading of B current is 0A and A/C current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 3 current check");
-    trans_ctrl->sendCtrlGnd(1+8+64);//K1 K8 K7//L1 L3 ON L2 OFF
 
     while(1)
     {
@@ -983,19 +908,18 @@ bool Power_DevRead::NineInsertThree_CtrlTwo(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::NineInsertThree_CtrlThree(Test_TransThread *trans_ctrl)
+bool Power_DevRead::NineInsertThree_CtrlThree()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L3，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("打开负载输入端L2，关闭负载输入端L3");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座3电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L3, check that the reading of C current is 0A, and the A/B current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 3 current check");
-    trans_ctrl->sendCtrlGnd(1+8+32);//K1 K8 K6//L1 L2 ON L3 OFF
 
     while(1)
     {
@@ -1114,13 +1038,12 @@ bool Power_DevRead::NineInsertOne_BreakerThree()
     return ret;
 }
 
-bool Power_DevRead::Load_NineLoop(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Load_NineLoop()
 {
     bool ret = true; QString str1; int flag = 0;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     QString str = tr("请准备输出口1，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+2+32+64);//K1 K2 //L1 L2 L3 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1){
         int a=0, b=0, c=0;
@@ -1144,26 +1067,22 @@ bool Power_DevRead::Load_NineLoop(Test_TransThread *trans_ctrl)
     }
     QString str2 = tr("请检测输出口1位置的极性测试是否合格?");
     // emit PloarSig(str2);
-    emit StepSig(str2); //emit CurImageSig(1);
-    sleep(5);
+    emit StepSig(str2); emit CurImageSig(1); sleep(5);
 
 
-    if(ret) ret = NineInsertOne_CtrlOne(trans_ctrl);//
-    if(ret) ret = NineInsertOne_CtrlTwo(trans_ctrl);
-    if(ret) ret = NineInsertOne_CtrlThree(trans_ctrl);
-    if(ret) ret = Insert_NoneOutput(trans_ctrl,1);
+    if(ret) ret = NineInsertOne_CtrlOne();
+    if(ret) ret = NineInsertOne_CtrlTwo();
+    if(ret) ret = NineInsertOne_CtrlThree();
 
-    if(ret) ret = NineInsertTwo_CtrlOne(trans_ctrl);//
-    if(ret) ret = NineInsertTwo_CtrlTwo(trans_ctrl);
-    if(ret) ret = NineInsertTwo_CtrlThree(trans_ctrl);
-    if(ret) ret = Insert_NoneOutput(trans_ctrl,2);
+    if(ret) ret = NineInsertTwo_CtrlOne();
+    if(ret) ret = NineInsertTwo_CtrlTwo();
+    if(ret) ret = NineInsertTwo_CtrlThree();
 
-    if(ret) ret = NineInsertThree_CtrlOne(trans_ctrl);//
-    if(ret) ret = NineInsertThree_CtrlTwo(trans_ctrl);
-    if(ret) ret = NineInsertThree_CtrlThree(trans_ctrl);
-    if(ret) ret = Insert_NoneOutput(trans_ctrl,3);
+    if(ret) ret = NineInsertThree_CtrlOne();
+    if(ret) ret = NineInsertThree_CtrlTwo();
+    if(ret) ret = NineInsertThree_CtrlThree();
 
-    //emit CurImageSig(4);
+    emit CurImageSig(4);
 
     return ret;
 }
@@ -1179,19 +1098,18 @@ bool Power_DevRead::Break_NineLoop()
     return ret;
 }
 
-bool Power_DevRead::SixInsertOne_CtrlOne(Test_TransThread *trans_ctrl)
+bool Power_DevRead::SixInsertOne_CtrlOne()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("关闭负载输入端L1");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
-    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2);//K1 K2 //L1 ON L2 L3 OFF
 
     while(1)
     {
@@ -1201,7 +1119,7 @@ bool Power_DevRead::SixInsertOne_CtrlOne(Test_TransThread *trans_ctrl)
             Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
         }
         a = Obj->cur.value[0]; b = Obj->cur.status[1]; c = Obj->cur.status[2];
-        if(a &&(!b) &&(!c)) {
+        if((!a) &&b &&c) {
             ret = true;
             for(int i =0;i<loop;i++)
             {
@@ -1242,19 +1160,18 @@ bool Power_DevRead::SixInsertOne_CtrlOne(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::SixInsertOne_CtrlTwo(Test_TransThread *trans_ctrl)
+bool Power_DevRead::SixInsertOne_CtrlTwo()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L2，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("打开负载输入端L1，关闭负载输入端L2");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L2 and check that the reading of B current is 0A and A/C current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2+64);//K1 K2 K7//L1 L3 ON L2 OFF
 
     while(1)
     {
@@ -1304,19 +1221,18 @@ bool Power_DevRead::SixInsertOne_CtrlTwo(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::SixInsertOne_CtrlThree(Test_TransThread *trans_ctrl)
+bool Power_DevRead::SixInsertOne_CtrlThree()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L3，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("打开负载输入端L2，关闭负载输入端L3");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L3, check that the reading of C current is 0A, and the A/B current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2+32);//K1 K2 K6//L1 L2 ON L3 OFF
 
     while(1)
     {
@@ -1434,20 +1350,19 @@ bool Power_DevRead::SixInsertOne_BreakerOne()
     return ret;
 }
 
-bool Power_DevRead::SixInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
+bool Power_DevRead::SixInsertTwo_CtrlOne()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座2接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座2接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("请准备输出口2，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
 
     QString str3; QString str4 = tr("插座2电流检查");
-    QString eng2 = tr("Connect output socket 2 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 2 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 2 current check");
-    trans_ctrl->sendCtrlGnd(1+4+32+64);//K1 K2 K6 K7//L1 L2 L3 ON
 
     while(1){
         int a=0, b=0, c=0;
@@ -1470,12 +1385,10 @@ bool Power_DevRead::SixInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
     }
     QString str5 = tr("请检测输出口2位置的极性测试是否合格?");
     // emit PloarSig(str5);
-    emit StepSig(str5);  //emit CurImageSig(1);
-    sleep(5);
+    emit StepSig(str5);  emit CurImageSig(1);sleep(5);
     flag = 0;
     str = tr("关闭负载输入端L1");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+4);//K1 K3//L1 ON L2 L3 OFF
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1)
     {
@@ -1485,7 +1398,7 @@ bool Power_DevRead::SixInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
             Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
         }
         a = Obj->cur.value[3]; b = Obj->cur.status[4]; c = Obj->cur.status[5];
-        if(a &&(!b) &&(!c)) {
+        if((!a) &&b &&c) {
             ret = true;
             for(int i =0;i<loop;i++)
             {
@@ -1525,20 +1438,18 @@ bool Power_DevRead::SixInsertTwo_CtrlOne(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::SixInsertTwo_CtrlTwo(Test_TransThread *trans_ctrl)
+bool Power_DevRead::SixInsertTwo_CtrlTwo()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L2，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("打开负载输入端L1，关闭负载输入端L2");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座2电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L2 and check that the reading of B current is 0A and A/C current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 2 current check");
-    trans_ctrl->sendCtrlGnd(1+4+64);//K1 K3 K7//L1 L3 ON L2 OFF
-
 
     while(1)
     {
@@ -1588,19 +1499,18 @@ bool Power_DevRead::SixInsertTwo_CtrlTwo(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::SixInsertTwo_CtrlThree(Test_TransThread *trans_ctrl)
+bool Power_DevRead::SixInsertTwo_CtrlThree()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L3，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("打开负载输入端L2，关闭负载输入端L3");
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座2电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L3, check that the reading of C current is 0A, and the A/B current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 2 current check");
-    trans_ctrl->sendCtrlGnd(1+4+32);//K1 K3 K6//L1 L2 ON L3 OFF
 
     while(1)
     {
@@ -1718,13 +1628,12 @@ bool Power_DevRead::SixInsertOne_BreakerTwo()
     return ret;
 }
 
-bool Power_DevRead::Load_SixLoop(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Load_SixLoop()
 {
     bool ret = true; QString str1; int flag = 0;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     QString str = tr("请准备输出口1，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+2+32+64);//K1 K2 K6 K7//L1 L2 L3 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1){
         int a=0, b=0, c=0;
@@ -1747,20 +1656,17 @@ bool Power_DevRead::Load_SixLoop(Test_TransThread *trans_ctrl)
     }
     QString str3 = tr("请检测输出口1位置的极性测试是否合格?");
     // emit PloarSig(str3);
-    emit StepSig(str3); //emit CurImageSig(1);
-    sleep(5);
+    emit StepSig(str3); emit CurImageSig(1); sleep(5);
 
-    if(ret) ret = SixInsertOne_CtrlOne(trans_ctrl);
-    if(ret) ret = SixInsertOne_CtrlTwo(trans_ctrl);
-    if(ret) ret = SixInsertOne_CtrlThree(trans_ctrl);
-    if(ret) ret = Insert_NoneOutput(trans_ctrl , 1);
+    if(ret) ret = SixInsertOne_CtrlOne();
+    if(ret) ret = SixInsertOne_CtrlTwo();
+    if(ret) ret = SixInsertOne_CtrlThree();
 
-    if(ret) ret = SixInsertTwo_CtrlOne(trans_ctrl);
-    if(ret) ret = SixInsertTwo_CtrlTwo(trans_ctrl);
-    if(ret) ret = SixInsertTwo_CtrlThree(trans_ctrl);
-    if(ret) ret = Insert_NoneOutput(trans_ctrl , 2);
+    if(ret) ret = SixInsertTwo_CtrlOne();
+    if(ret) ret = SixInsertTwo_CtrlTwo();
+    if(ret) ret = SixInsertTwo_CtrlThree();
 
-    //emit CurImageSig(4);
+    emit CurImageSig(4);
 
     return ret;
 }
@@ -1770,24 +1676,23 @@ bool Power_DevRead::Break_SixLoop()
     bool ret = true;
     ret = SixInsertOne_BreakerOne();
     if(ret) ret = SixInsertOne_BreakerTwo();
-    //emit CurImageSig(4);
+    emit CurImageSig(4);
 
     return ret;
 }
 
-bool Power_DevRead::Three_CtrlOne(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Three_CtrlOne()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("关闭负载输入端L1");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
-    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2);//K1 K2//L1 ON L2 L3 OFF
 
     while(1)
     {
@@ -1797,7 +1702,7 @@ bool Power_DevRead::Three_CtrlOne(Test_TransThread *trans_ctrl)
             Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
         }
         a = Obj->cur.value[0]; b = Obj->cur.status[1]; c = Obj->cur.status[2];
-        if(a && (!b) && (!c)) {
+        if((!a) && b && c) {
             ret = true;
             for(int i =0;i<loop;i++)
             {
@@ -1843,19 +1748,18 @@ bool Power_DevRead::Three_CtrlOne(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::Three_CtrlTwo(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Three_CtrlTwo()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L2，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("打开负载输入端L1，关闭负载输入端L2");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L2 and check that the reading of B current is 0A and A/C current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2+64);//K1 K2 K7//L1 L3 ON L2 OFF
 
     while(1)
     {
@@ -1908,19 +1812,18 @@ bool Power_DevRead::Three_CtrlTwo(Test_TransThread *trans_ctrl)
     return ret;
 }
 
-bool Power_DevRead::Three_CtrlThree(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Three_CtrlThree()
 {
     bool ret = true; int flag = 0;QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("断开负载输入端断路器L3，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("打开负载输入端L2，关闭负载输入端L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     QString str3; QString str4 = tr("插座1电流检查");
     QString eng2 = tr("Disconnect the load input circuit breaker L3, check that the reading of C current is 0A, and the A/B current is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
-    trans_ctrl->sendCtrlGnd(1+2+32);//K1 K2 K6//L1 L2 ON L3 OFF
 
     while(1)
     {
@@ -2035,18 +1938,17 @@ bool Power_DevRead::Three_Breaker()
     return ret;
 }
 
-bool Power_DevRead::Three_One(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Three_One()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
-    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取B/C电流为0A，A电流为正常；");
+    QString str2 = tr("输出插座1接入负载，断开负载输入端断路器L1，读取读取A电流为0A，B/C电流为正常；");
     QString str = tr("请准备输出口1，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+2+32+64);//K1 K2 K6 K7//L1 L2 L3 ON 1 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     QString str3; QString str4 = tr("插座1电流检查");
-    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of B/C is 0A, while the current of A is normal;");
+    QString eng2 = tr("Connect output socket 1 to the load, disconnect the load input circuit breaker L1, and read that the current of A is 0A, while the current of B/C is normal;");
     QString eng3;
     QString eng4 = tr("Socket 1 current check");
 
@@ -2056,26 +1958,24 @@ bool Power_DevRead::Three_One(Test_TransThread *trans_ctrl)
             ret = readData();
             Obj->cur.status[0] = mErr->checkErrRange(exValue, Obj->cur.value[0], err);
             if(Obj->cur.status[0]){
-                ret = true;
-                break;
-            }
+                    ret = true;
+                    break;
+                }
         }
         flag++;
         if(flag >90) {
             ret = false;
             str = tr("输出口1 无电流");mLogs->updatePro(str, ret);
-            break;
+                break;
         }
     }
     QString str5 = tr("相位转换旋钮转到L1，并检测输出口1位置的极性测试是否合格?");
     // emit PloarSig(str5);
-    emit StepSig(str5); //emit CurImageSig(1);
-    trans_ctrl->sendCtrlGnd(1+32+64);//K1 K6 K7//L1 L2 L3 ON 1 OFF
-    sleep(5);
+    emit StepSig(str5); emit CurImageSig(1); sleep(5);
 
     flag = 0;
     str = tr("关闭负载输入端L1");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
 
     while(1)
     {
@@ -2190,15 +2090,14 @@ bool Power_DevRead::Three_OneBreaker()
     return ret;
 }
 
-bool Power_DevRead::Three_Two(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Three_Two()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("输出插座2接入负载，断开负载输入端断路器L1，检查读取B电流为0A，A/C电流为正常；");
     QString str = tr("请准备输出口2，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+32+64+4);//K1 K3 K6 K7//L1 L2 L3 ON 2 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     QString str3; QString str4 = tr("插座2电流检查");
     QString eng2 = tr("Connect output socket 2 to the load, disconnect the load input circuit breaker L1, check and read that the current of B is 0A, and the current of A/C is normal;");
@@ -2222,13 +2121,11 @@ bool Power_DevRead::Three_Two(Test_TransThread *trans_ctrl)
     }
     QString str5 = tr("相位转换旋钮转到L1，检测输出口2位置的极性测试是否合格?");
     // emit PloarSig(str5);
-    emit StepSig(str5); //emit CurImageSig(1);
-    trans_ctrl->sendCtrlGnd(1+32+64);//K1 K6 K7//L1 L2 L3 ON 2 OFF
-    sleep(5);
+    emit StepSig(str5); emit CurImageSig(1); sleep(5);
 
     flag = 0;
     str = tr("关闭负载输入端L1");  //单相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     while(1)
     {
         int a=0, b=0, c = 0;
@@ -2344,15 +2241,14 @@ bool Power_DevRead::Three_TwoBreaker()
     return ret;
 }
 
-bool Power_DevRead::Three_Three(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Three_Three()
 {
     bool ret = true; int flag = 0; QString str1;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
     uchar loop = mBusData->box[mItem->addr-1].loopNum;
     QString str2 = tr("输出插座3接入负载，断开负载输入端断路器L1，检查读取C电流为0A，A/B电流为正常；");
     QString str = tr("请准备输出口3，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
-    trans_ctrl->sendCtrlGnd(1+8+32+64);//K1 K4 K6 K7//L1 L2 L3 ON 3 ON
+    emit StepSig(str); emit CurImageSig(2);
 
     QString str3; QString str4 = tr("插座3电流检查");
     QString eng2 = tr("Connect the output socket 3 to the load, disconnect the load input circuit breaker L1, and check that the reading of C current is 0A, and the A/B current is normal;");
@@ -2376,13 +2272,11 @@ bool Power_DevRead::Three_Three(Test_TransThread *trans_ctrl)
     }
     QString str5 = tr("相位转换旋钮转到L1，检测输出口3位置的极性测试是否合格?");
     // emit PloarSig(str5);
-    emit StepSig(str5); //emit CurImageSig(1);
-    trans_ctrl->sendCtrlGnd(1+32+64);//K1 K6 K7//L1 L2 L3 ON 3 OFF
-    sleep(5);
+    emit StepSig(str5); emit CurImageSig(1); sleep(5);
 
     flag = 0;
     str = tr("关闭负载输入端L1");  //三相回路电流、功率
-    emit StepSig(str); //emit CurImageSig(2);
+    emit StepSig(str); emit CurImageSig(2);
     while(1)
     {
         int a=0, b=0, c = 1;
@@ -2496,7 +2390,7 @@ bool Power_DevRead::Three_ThreeBreaker()
     return ret;
 }
 
-bool Power_DevRead::Load_ThreeLoop(Test_TransThread *trans_ctrl)
+bool Power_DevRead::Load_ThreeLoop()
 {
     bool ret = true; QString str; int flag = 0;
     sObjectData *Obj = &(mBusData->box[mItem->addr - 1].data);
@@ -2504,13 +2398,12 @@ bool Power_DevRead::Load_ThreeLoop(Test_TransThread *trans_ctrl)
     QString str3 = tr("符合要求"); QString str4 = tr("始端箱功率检查");
     if((mItem->modeId == START_BUSBAR) || (mBusData->box[mItem->addr-1].phaseFlag == 1)) {
         str = tr("请准备输出口，打开负载输入端L1、L2、L3");  //三相回路电流、功率
-        emit StepSig(str); //emit CurImageSig(2);
-        trans_ctrl->sendCtrlGnd(1+2+32+64);//K1 K2 K6 K7//L1 L2 L3 ON
+        emit StepSig(str); emit CurImageSig(2);
 
         while(1){
             int a=0, b=0, c=0;
             ret = readData();
-            for(int i =0;i<3;i++) {//exValue
+            for(int i =0;i<3;i++) {
                 Obj->cur.status[i] = mErr->checkErrRange(exValue, Obj->cur.value[i], err);
             }
             a = Obj->cur.status[0]; b = Obj->cur.status[1]; c = Obj->cur.status[2];
@@ -2526,8 +2419,7 @@ bool Power_DevRead::Load_ThreeLoop(Test_TransThread *trans_ctrl)
         }
         QString str5 = tr("请检测该输出口位置的极性测试是否合格?");
         // emit PloarSig(str5);
-        emit StepSig(str5); //emit CurImageSig(1);
-        sleep(5);
+        emit StepSig(str5); emit CurImageSig(1); sleep(5);
 
         if(mItem->modeId == START_BUSBAR) { //判断始端箱三相功率值之和是否等于总功率误差不超过10kw
             flag = 0; bool res = false;uint toTal = 0; uint sum = 0;
@@ -2551,26 +2443,28 @@ bool Power_DevRead::Load_ThreeLoop(Test_TransThread *trans_ctrl)
             }
 
             QString str1 = tr("总功率与三相功率之和在误差%1范围内");
-            str = tr("总功率为 %1kW，三相功率之和为 %2kW").arg(toTal /COM_RATE_POW).arg(sum /COM_RATE_POW);
+            str = tr("总功率为 %1kw，三相功率之和为 %2kw").arg(toTal /COM_RATE_POW).arg(sum /COM_RATE_POW);
             if(!res) {
                 str += tr("误差较大"); str3 = tr("不符合要求");
             }
             mLogs->updatePro(str, res); //mLogs->writeData(str1,str3,str4,res);
         }
 
-        if(ret) ret = Three_CtrlOne(trans_ctrl);
-        if(ret) ret = Three_CtrlTwo(trans_ctrl);
-        if(ret) ret = Three_CtrlThree(trans_ctrl);
-        if(ret) ret = Insert_NoneOutput(trans_ctrl , 1);//始端箱底数检查？？？
+        if(ret) ret = Three_CtrlOne();
+        if(ret) ret = Three_CtrlTwo();
+        if(ret) ret = Three_CtrlThree();
 
     }else if((mItem->modeId != START_BUSBAR) && (mBusData->box[mItem->addr-1].phaseFlag == 0)) {    //单相三回路三个输出位
 
-        if(ret) ret = Three_One(trans_ctrl);
-        if(ret) ret = Three_Two(trans_ctrl);
-        if(ret) ret = Three_Three(trans_ctrl);
+        if(mItem->si.si_testItem == 0 || mItem->si.si_testItem == 1)
+        if(ret) ret = Three_One();
+        if(mItem->si.si_testItem == 0 || mItem->si.si_testItem == 2)
+        if(ret) ret = Three_Two();
+        if(mItem->si.si_testItem == 0 || mItem->si.si_testItem == 3)
+        if(ret) ret = Three_Three();
 
     }
-    //emit CurImageSig(4);
+    emit CurImageSig(4);
 
     return ret;
 }
@@ -2578,8 +2472,11 @@ bool Power_DevRead::Three_Break()
 {
     bool ret = true;
 
+    if(mItem->si.si_testItem == 0 || mItem->si.si_testItem == 1)
     ret = Three_OneBreaker();
+    if(mItem->si.si_testItem == 0 || mItem->si.si_testItem == 2)
     if(ret) ret = Three_TwoBreaker();
+    if(mItem->si.si_testItem == 0 || mItem->si.si_testItem == 3)
     if(ret) ret = Three_ThreeBreaker();
     // emit CurImageSig(4);
 

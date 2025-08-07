@@ -18,7 +18,7 @@ Dev_Object::Dev_Object(QObject *parent) : QThread(parent)
 
 void Dev_Object::initFunSlot()
 {
-    setModbus(4);
+    setModbus(2);
 }
 
 void Dev_Object::setModbus(int id)

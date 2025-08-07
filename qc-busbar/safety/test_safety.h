@@ -15,7 +15,6 @@ public:
 
     void startThread();
     void stopThread();
-    Test_TransThread *mTrans;
 signals:
     void overSig();
 
@@ -33,14 +32,16 @@ protected:
     bool testIR(QString &recv);
     bool testACW(QString &recv);
     bool startTest(sTestDataItem &item,QString & recv , const QString &test , int step , int &stepTotal);
-    bool testPolar();
+
 
 private:
     int mItemId;
     int mTestStep;
 
     QTimer *timer;
+
     sTestConfigItem  *mItem;
+    Test_TransThread *mTrans;
     sCfgItem *mCfg;
     sProgress *mPro;
     sProgress *ePro;

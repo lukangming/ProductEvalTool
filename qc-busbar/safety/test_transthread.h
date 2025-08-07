@@ -1,10 +1,7 @@
 ﻿#ifndef TEST_TRANSTHREAD_H
 #define TEST_TRANSTHREAD_H
-#include <iomanip>
-#include <sstream>
+
 #include "testdatasave.h"
-// #include <QString>
-// #include <QDebug>
 
 enum TestResisEnum {
     ConnectReady = 1,//1
@@ -26,16 +23,6 @@ public:
     QString sentStep(int step, int i , QString & command , int extra = 1);
     QString sentResisCommand(int command, int extra);
     bool readDevBus();
-    void sendCtrlGnd(int command);
-    bool recvPolarity();
-    bool checkFeeder_boxPolarity(QList<int> Intresult);
-    bool checkTapoff_boxPolarity(QList<int> Intresult);
-    bool recvLoadCur(QList<int> &Intresult);
-    QByteArray sendCmd(int command);
-    QString transStr(int command);
-
-    ushort calccrc (ushort crc, uchar crcbuf);
-    ushort rtu_crc(const uchar *buf, int len);
 
 signals:
 
@@ -44,12 +31,7 @@ protected slots:
 
 private:
     SerialPort *mSerial;
-    SerialPort *mSerialCtrl;
-    SerialPort *mSerialPolar;
-    SerialPort *mSerialLoadCur;
-
-    sCfgItem *mItem;
-    sDataPacket *mPacket;
+    SerialPort *mSerialGND;
 };
 
 #endif // TEST_TRANSTHREAD_H

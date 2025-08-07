@@ -7,9 +7,9 @@
 
 Dev_Source::Dev_Source(QObject *parent) : Dev_SiRtu(parent)
 {
-//    mRk = new Rk_Serial(this);
-//    mDev = sDataPacket::bulid()->getDev(0);
-//    init();
+    mRk = new Rk_Serial(this);
+    mDev = sDataPacket::bulid()->getDev(0);
+    init();
 }
 
 Dev_Source *Dev_Source::bulid(QObject *parent)
@@ -22,8 +22,8 @@ Dev_Source *Dev_Source::bulid(QObject *parent)
 
 void Dev_Source::initFunSlot()
 {
-//    setModbus(3);
-//    mRk->init(mItem->coms.ser4);
+    setModbus(0);
+    mRk->init(mItem->coms.ser3);
 }
 
 void Dev_Source::init()
@@ -61,14 +61,18 @@ bool Dev_Source::readRk9901()
         mPacket->updatePro(str, ret);
     }
 #else
-    mItem->coms.ser4->setBaudRate(9600);
+    mItem->coms.ser3->setBaudRate(9600);
     bool ret = mRk->readPacket1(rkIt);
     if(ret) {
         sObjData *obj = &(mDev->line);
         for(int i=0; i<3; ++i) {
-            obj->vol.value[i] = rkIt.vola[i];
-            obj->cur.value[i] = rkIt.cura[i]/10;
+            obj->source_vol[i] = rkIt.vola[i];
+            obj->source_cur[i] = rkIt.cura[i];
             obj->pow[i] = rkIt.powa[i]/1000;//有功功率
+
+            obj->source_vol[i] = 220000;
+            obj->source_cur[i] = 19000;
+
             // obj->hz[i] = rkIt.hz;
             //            obj->cur.value[i] = rkIt.cur / curUnit;
             //            obj->pow[i] = rkIt.pow / 1000;

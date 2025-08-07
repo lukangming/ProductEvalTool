@@ -50,8 +50,8 @@ void Home_WorkWid::initWid()
     connect(mVolInsul, &Face_Volinsul::finshSig, this, &Home_WorkWid::SafeSlot);
     connect(mVolInsul, &Face_Volinsul::overSig, this, &Home_WorkWid::JudgSlots);
 
-    mSafetyThread = new Test_safety(this);
-    connect(mSafetyThread, SIGNAL(overSig()), this, SLOT(overSlot()));
+    mSafrtyThread = new Test_safety(this);
+    connect(mSafrtyThread, SIGNAL(overSig()), this, SLOT(overSlot()));
 
     mThread = new Test_Thread(this);
     connect(mThread, &Test_Thread::messageSig, this, &Home_WorkWid::SafeStop);
@@ -64,7 +64,6 @@ void Home_WorkWid::initWid()
     connect(Json_Pack::bulid(this), &Json_Pack::httpSig, this, &Home_WorkWid::insertTextslots);
 
     mPowThread = new Power_CoreThread(this);
-    mPowThread->initTestTrans(mSafetyThread->mTrans);
     // connect(this , SIGNAL(clearStartEleSig()), mPowThread, SLOT(clearStartEleSlot()));
     connect(mPowThread,&Power_CoreThread::finshSig, this, &Home_WorkWid::StatusSlot);
     connect(mPowThread,&Power_CoreThread::JudgSig, this, &Home_WorkWid::JudgSlots);
@@ -120,7 +119,6 @@ void Home_WorkWid::overTest()
 {
     bool ret = MsgBox::information(this, tr("是否停止测试?"));
     if(ret){
-        mSafetyThread->mTrans->sendCtrlGnd(0);
         overSlot();
     }
 }
@@ -130,9 +128,9 @@ void Home_WorkWid::startTest()
     int ret = true;
     if(ret == QDialog::Accepted ) {
         mItem->mode = Test_Start;
-        mSafetyThread->startThread();//安规
-        if(mCfgm->modeId == 2) mThread->startThread();//光栅
-        mVolInsul->startSlot();//安规进度条
+        mSafrtyThread->startThread();
+        if(mCfgm->modeId == 2) mThread->startThread();
+        mVolInsul->startSlot();
 
     }
 }
@@ -340,6 +338,7 @@ bool Home_WorkWid::initSerialVol()
     Cfg::bulid()->writeQRcode();//成品sn===成品代码+订单号
 
     bool ret = false;
+    if(!coms->ser1){MsgBox::critical(this, tr("请先打Acw/Ir串口")); return ret;}
     ret = coms->ser1->isOpened();
     if(!ret){MsgBox::critical(this, tr("请先打Acw/Ir串口")); return ret;}
 
@@ -361,6 +360,7 @@ bool Home_WorkWid::initSerialGND()
     if(mCfgm->modeId == 2){//母线槽
         ret = true;
     } else{
+        if(!coms->ser2){MsgBox::critical(this, tr("请先打开Gnd串口")); return ret;}
         ret = coms->ser2->isOpened();
         if(!ret){MsgBox::critical(this, tr("请先打开Gnd串口")); return ret;}
     }
@@ -378,8 +378,8 @@ bool Home_WorkWid::initSerial()
     if(mCfgm->modeId == 2){//母线槽
         ret = true;
     }else{
-        ret = coms->ser4->isOpened();
-        if(!ret){MsgBox::critical(this, tr("请先打开表头串口")); return ret;}
+        ret = coms->ser3->isOpened();
+        if(!ret){MsgBox::critical(this, tr("请先打开Dev串口")); return ret;}
     }
 
     return ret;
@@ -542,7 +542,7 @@ void Home_WorkWid::SafeSlot()
 
 void Home_WorkWid::SafeStop()
 {
-    mSafetyThread->stopThread();
+    mSafrtyThread->stopThread();
     overSlot();
 }
 

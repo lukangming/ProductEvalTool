@@ -4,7 +4,6 @@
 // #include "json_pack.h"
 #include "testconfig.h"
 #include "people_judg.h"
-#include "safety/test_transthread.h"
 
 class Power_CoreThread : public Power_Object
 {
@@ -13,8 +12,6 @@ public:
     explicit Power_CoreThread(QObject *parent = nullptr);
     void clearStartEleSlot();
     bool printer();
-    void initTestTrans(Test_TransThread *test);
-    Test_TransThread *mTrans;
 protected slots:
     void initFunSlot();
 

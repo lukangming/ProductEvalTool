@@ -121,7 +121,7 @@ private:
 
     Test_Thread *mThread;
     Face_Power *mPower;
-    Test_safety *mSafetyThread;
+    Test_safety *mSafrtyThread;
     Face_Volinsul *mVolInsul;
     Home_LoopTabWid *mLineTabWid;
 

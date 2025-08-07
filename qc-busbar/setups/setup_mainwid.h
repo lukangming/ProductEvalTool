@@ -38,12 +38,9 @@ private:
 
     sCfgItem *mItem;
     UserMainWid *mUserWid;
-    SerialStatusWid *mComWid1;
-    SerialStatusWid *mComWid2;
-    SerialStatusWid *mComWid3;
-    SerialStatusWid *mComWid4;
-    SerialStatusWid *mComWid5;
-    SerialStatusWid *mComWid6;
+    SerialStatusWid *mComWid;
+    SerialStatusWid *mSourceWid;
+    SerialStatusWid *mControlWid;
 };
 
 #endif // SETUP_MAINWID_H
