@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
+<<<<<<< Updated upstream
 <!-- Written by QtCreator 16.0.1, 2025-07-25T08:38:31. -->
+=======
+<!-- Written by QtCreator 16.0.1, 2025-07-30T19:22:30. -->
+>>>>>>> Stashed changes
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -101,11 +105,16 @@
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt5.5152.win64_mingw81_kit</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
-   <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
+   <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">1</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="int" key="EnableQmlDebugging">0</value>
+<<<<<<< Updated upstream
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">D:\桌面\新建文件夹\ProductEvalTool\ProductEvalTool\build\Desktop_Qt_5_15_2_MinGW_64_bit-Debug</value>
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Debug</value>
+=======
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">D:\test\word_test\ProductEvalTool\ProductEvalTool\build\Desktop_Qt_5_15_2_MinGW_64_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">D:/test/word_test/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Debug</value>
+>>>>>>> Stashed changes
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -143,8 +152,13 @@
     <value type="int" key="Qt4ProjectManager.Qt4BuildConfiguration.BuildConfiguration">2</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
+<<<<<<< Updated upstream
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">D:\桌面\新建文件夹\ProductEvalTool\ProductEvalTool\build\Desktop_Qt_5_15_2_MinGW_64_bit-Release</value>
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Release</value>
+=======
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">D:\test\word_test\ProductEvalTool\ProductEvalTool\build\Desktop_Qt_5_15_2_MinGW_64_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">D:/test/word_test/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Release</value>
+>>>>>>> Stashed changes
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -184,8 +198,13 @@
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.2">
     <value type="int" key="EnableQmlDebugging">0</value>
+<<<<<<< Updated upstream
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">D:\桌面\新建文件夹\ProductEvalTool\ProductEvalTool\build\Desktop_Qt_5_15_2_MinGW_64_bit-Profile</value>
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Profile</value>
+=======
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">D:\test\word_test\ProductEvalTool\ProductEvalTool\build\Desktop_Qt_5_15_2_MinGW_64_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">D:/test/word_test/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Profile</value>
+>>>>>>> Stashed changes
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -251,12 +270,20 @@
     <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph &quot;dwarf,4096&quot; -F 250</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
+<<<<<<< Updated upstream
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/calibrate-ip/calibrate-ip.pro</value>
+=======
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/test/word_test/ProductEvalTool/ProductEvalTool/calibrate-ip/calibrate-ip.pro</value>
+>>>>>>> Stashed changes
     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+<<<<<<< Updated upstream
     <value type="QString" key="RunConfiguration.WorkingDirectory.default">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Debug/calibrate-ip</value>
+=======
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">D:/test/word_test/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Debug/calibrate-ip</value>
+>>>>>>> Stashed changes
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.1">
     <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
@@ -271,12 +298,20 @@
     <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph &quot;dwarf,4096&quot; -F 250</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
+<<<<<<< Updated upstream
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/qc-busbar/qc-busbar.pro</value>
+=======
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/test/word_test/ProductEvalTool/ProductEvalTool/qc-busbar/qc-busbar.pro</value>
+>>>>>>> Stashed changes
     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+<<<<<<< Updated upstream
     <value type="QString" key="RunConfiguration.WorkingDirectory.default">D:/桌面/新建文件夹/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Debug/qc-busbar</value>
+=======
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">D:/test/word_test/ProductEvalTool/ProductEvalTool/build/Desktop_Qt_5_15_2_MinGW_64_bit-Debug/qc-busbar</value>
+>>>>>>> Stashed changes
    </valuemap>
    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">2</value>
   </valuemap>

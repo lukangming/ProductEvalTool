@@ -281,6 +281,11 @@ struct sObjData
     int size;
     sDataUnit vol; // 电压
     sDataUnit cur; // 电流
+<<<<<<< Updated upstream
+=======
+    uint source_vol[DEV_NUM];// 负载电压
+    uint source_cur[DEV_NUM];// 负载电流
+>>>>>>> Stashed changes
 
     uint pow[PACK_ARRAY_SIZE]; // 功率
     uint ele[PACK_ARRAY_SIZE]; // 电能

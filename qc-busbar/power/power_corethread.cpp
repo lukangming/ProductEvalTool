@@ -49,9 +49,9 @@ bool Power_CoreThread::initDev()
         mModbus->autoSetAddress(); //emit ImageSig(4);
 
     }
+    //ret = mRead->readSn();
 
-    ret = mRead->readSn();
-    if(ret) mItem->modeId = mDt->devType;
+    //if(ret) mItem->modeId = mDt->devType;
 
     return ret;
 }
@@ -570,6 +570,223 @@ void Power_CoreThread::InsertErrRange()
 
 }
 
+void Power_CoreThread::clearObjVolCur(sObjData *obj)
+{
+    for(int i = 0; i < 3; i ++) {
+        obj->source_cur[i] = obj->source_vol[i] = 0;
+    }
+}
+
+bool Power_CoreThread::VolCurCtrlSigle(sObjData *obj,int id)
+{
+    bool ret = true;
+    int flag = 0;
+
+    QString name;
+    if(id == 0)name = "A1";
+    else if(id == 1)name = "B1";
+    else name = "C1";
+
+    QString title = tr("回路电压电流检测");
+    QString engTitle = tr("Loop Voltage Current Check");
+
+    emit TipSig(tr("正在采集电压电流，请稍候..."));
+
+    while (1)
+    {
+        ret = mRead->readDevBasicType(); // 读取电压电流填充 obj
+        int okCount = 0;
+        int exVol = mItem->si.si_vol * 10.0;
+        int errVol = mItem->si.si_volErr * 10.0;
+        // 电流标准值和误差
+        int exCur = mItem->si.si_cur * 1000.0;
+        int errCur = mItem->si.si_curErr * 1000.0;
+
+        int volValue = obj->source_vol[id] / 100.0;
+        int curValue = obj->source_cur[id];
+
+        bool volOk = mErr->checkErrRange(exVol, volValue, errVol);
+        bool curOk = mErr->checkErrRange(exCur, curValue, errCur);
+
+        if(volOk && curOk) {
+            QString str, engStr;
+
+            double vol = obj->source_vol[id] / COM_RATE_VOL;
+            double cur = obj->source_cur[id] / COM_RATE_CUR;
+            str += tr("%1 电压: %2V, 电流: %3A; ")
+                       .arg(name)
+                       .arg(vol, 0, 'f', 2)
+                       .arg(cur, 0, 'f', 2);
+            engStr += tr("%1 voltage: %2V, current: %3A; ")
+                          .arg(name)
+                          .arg(vol, 0, 'f', 2)
+                          .arg(cur, 0, 'f', 2);
+
+            mLogs->updatePro(str, true);
+            mLogs->writeData(title, str, tr("检测成功"), true);
+            mLogs->writeDataEng(engTitle, engStr, tr("Check Success"), true);
+
+            emit TipSig(tr("电压电流检测成功，准备切换下一步"));
+            return true;
+        }
+        flag++;
+        if (flag > 50)
+        {
+            QString str, engStr;
+
+            double vol = obj->vol.value[id] / COM_RATE_VOL;
+            double cur = obj->cur.value[id] / COM_RATE_CUR;
+            str += tr("%1 电压: %2V, 电流: %3A; ")
+                       .arg(name)
+                       .arg(vol, 0, 'f', 2)
+                       .arg(cur, 0, 'f', 2);
+            engStr += tr("%1 voltage: %2V, current: %3A; ")
+                          .arg(name)
+                          .arg(vol, 0, 'f', 2)
+                          .arg(cur, 0, 'f', 2);
+
+            mLogs->updatePro(str, false);
+            mLogs->updatePro(tr("电压电流检测失败，超过最大重试次数"), false);
+            mLogs->writeData(title, str, tr("检测失败"), false);
+            mLogs->writeDataEng(engTitle, engStr, tr("Check Failed"), false);
+
+            emit TipSig(tr("电压电流检测失败，请检查设备接线状态"));
+            return false;
+        }
+
+        QThread::msleep(1);
+    }
+
+
+}
+
+bool Power_CoreThread::VolCurCtrl(sObjData *obj,int id)
+{
+    bool ret = true;
+    int flag = 0;
+    uchar loop = 3;
+
+    QString title = tr("回路电压电流检测");
+    QString engTitle = tr("Loop Voltage Current Check");
+
+    emit TipSig(tr("正在采集电压电流，请稍候..."));
+
+    while (1)
+    {
+        ret = mRead->readDevBasicType(); // 读取电压电流填充 obj
+
+        int okCount = 0;
+        int exVol = mItem->si.si_vol * 10.0;
+        int errVol = mItem->si.si_volErr * 10.0;
+        // 电流标准值和误差
+        int exCur = mItem->si.si_cur * 1000.0;
+        int errCur = mItem->si.si_curErr * 1000.0;
+
+        for(int i = 0; i < 3; ++i)
+        {
+            int idx = i;
+
+            int volValue = obj->source_vol[idx] / 100.0;
+            int curValue = obj->source_cur[idx];
+
+            bool volOk = mErr->checkErrRange(exVol, volValue, errVol);
+            bool curOk = mErr->checkErrRange(exCur, curValue, errCur);
+
+            if(volOk && curOk) {
+                okCount++;
+            }
+        }
+
+        if (okCount == loop)
+        {
+            QString str, engStr;
+            for (int i = 0; i < loop; i++)
+            {
+                QString name = trans(i);
+                double vol = obj->source_vol[i] / COM_RATE_VOL;
+                double cur = obj->source_cur[i] / COM_RATE_CUR;
+                str += tr("%1 电压: %2V, 电流: %3A; ")
+                           .arg(name+QString::number(id + 1))
+                           .arg(vol, 0, 'f', 2)
+                           .arg(cur, 0, 'f', 2);
+                engStr += tr("%1 voltage: %2V, current: %3A; ")
+                              .arg(name+QString::number(id + 1))
+                              .arg(vol, 0, 'f', 2)
+                              .arg(cur, 0, 'f', 2);
+            }
+
+            mLogs->updatePro(str, true);
+            mLogs->writeData(title, str, tr("检测成功"), true);
+            mLogs->writeDataEng(engTitle, engStr, tr("Check Success"), true);
+
+            emit TipSig(tr("电压电流检测成功，准备切换下一步"));
+            return true;
+        }
+        flag++;
+        qDebug()<<flag;
+        if (flag > 50)
+        {
+            QString str, engStr;
+            for (int i = 0; i < loop; i++)
+            {
+                QString name = trans(i);
+                double vol = obj->vol.value[i] / COM_RATE_VOL;
+                double cur = obj->cur.value[i] / COM_RATE_CUR;
+                str += tr("%1 电压: %2V, 电流: %3A; ")
+                           .arg(name+QString::number(id + 1))
+                           .arg(vol, 0, 'f', 2)
+                           .arg(cur, 0, 'f', 2);
+                engStr += tr("%1 voltage: %2V, current: %3A; ")
+                              .arg(name+QString::number(id + 1))
+                              .arg(vol, 0, 'f', 2)
+                              .arg(cur, 0, 'f', 2);
+            }
+            mLogs->updatePro(str, false);
+            mLogs->updatePro(tr("电压电流检测失败，超过最大重试次数"), false);
+            mLogs->writeData(title, str, tr("检测失败"), false);
+            mLogs->writeDataEng(engTitle, engStr, tr("Check Failed"), false);
+
+            emit TipSig(tr("电压电流检测失败，请检查设备接线状态"));
+            return false;
+        }
+        QThread::msleep(1);
+    }
+}
+
+bool Power_CoreThread::BasicTypeBreakTest(sObjData *obj)
+{
+    this->mTrans->sendCtrlGnd(1 + 32 + 64); // 启动 L1,L2,L3
+    emit TipSig(tr("断路器断开检测中..."));
+    bool ok = true;
+    for (int i = 0; i < 3; i++) {
+        if (obj->source_vol[i] != 0) {
+            ok = false;
+            break;
+        }
+    }
+    if (ok) {
+        emit TipSig(tr("断路器断开成功"));
+    } else {
+        emit TipSig(tr("断路器断开失败，请检查是否完全断开"));
+    }
+    return ok;
+}
+
+bool Power_CoreThread::tryReadVolCur(sObjData *obj,int id)
+{
+    bool ret = true;
+    qDebug()<<"Three!";
+    ret = VolCurCtrl(obj,id);
+    return ret;
+}
+bool Power_CoreThread::tryReadVolCurSig(sObjData *obj,int id)
+{
+    bool ret = true;
+    qDebug()<<"Single!";
+    ret = VolCurCtrlSigle(obj,id);
+    return ret;
+}
+
 bool Power_CoreThread::VolErrRange()
 {
     bool ret = true , res = true; QString str;
@@ -913,7 +1130,7 @@ void Power_CoreThread::workResult(bool)
     mPro->work_mode = 3;
     mLogs->saveLogs();
 
-    mCfg->work_mode = 2; emit finshSig(res);   
+    mCfg->work_mode = 2; emit finshSig(res);
     mPro->step = Test_Over;
 }
 
@@ -1133,7 +1350,7 @@ bool Power_CoreThread::Vol_ctrlTwo()
                         str3 = tr("%1voltage %2V，").arg(temp).arg(Obj->vol.value[i]/COM_RATE_VOL);
                         str1 += str; eng3 += str3;
                     }
-                    mLogs->updatePro(str1, ret);              
+                    mLogs->updatePro(str1, ret);
                     str = tr("C路电压检测成功 ");mLogs->updatePro(str, ret);
                     mLogs->writeData(str2,str1,str4,ret); mLogs->writeDataEng(eng2,eng3,eng4,ret);
                     str1.clear(); break;
@@ -1408,6 +1625,72 @@ void Power_CoreThread::getNumAndIndexSlot(int curnum)
     }
 }
 
+
+bool Power_CoreThread::handleBasicType()
+{
+    bool ret = true;
+    ret = mRead->readDevBasicType();
+    sSiCfg *dv = &(mItem->si);
+    auto obj = &(mDev->line);
+    const bool isSinglePhase = (dv->si_phaseflag == 0);
+    qDebug()<<isSinglePhase;
+
+    auto checkThree = [&](int idx) ->bool {
+
+        qDebug()<<ret<<"????";
+        if(ret) ret = tryReadVolCur(obj,idx);
+
+        if(!ret) this->mTrans->sendCtrlGnd(0);
+
+        qDebug().noquote() << QString("第%1路 电压电流合格: %2").arg(idx + 1).arg(ret ? "是" : "否");
+        return ret;
+    };
+    auto checkSigle = [&](int idx) ->bool {
+
+        if(ret) ret = tryReadVolCurSig(obj,idx);
+
+        if(!ret) this->mTrans->sendCtrlGnd(0);
+
+        qDebug().noquote() << QString("第%1路 电压电流合格: %2").arg(idx + 1).arg(ret ? "是" : "否");
+        return ret;
+    };
+
+    if (isSinglePhase) {
+        for (int i = 0; i < 3; ++i) {
+            clearObjVolCur(obj);
+            this->mTrans->sendCtrlGnd(1+32+64);//启动L1,L2,L3
+            //if(ret) BasicTypeBreakTest(obj); //断路器测试
+
+            int f = 2 << i; // 2 4 8
+
+            this->mTrans->sendCtrlGnd(1+f+32+64);
+            ret = checkSigle(i);
+
+            if(!ret)break;
+            ret = true;
+        }
+    } else {
+        int groupCount = (dv->loopNum == 3) ? 1 : (dv->loopNum == 6) ? 2 : 3;
+        for (int g = 0; g < groupCount; ++g) {
+            qDebug()<<"Three "<<groupCount;
+            clearObjVolCur(obj);
+
+            this->mTrans->sendCtrlGnd(1+32+64);//启动L1,L2,L3
+            //if(ret) BasicTypeBreakTest(obj); //断路器测试
+
+            int f = 2 << g; //2 4 8
+            this->mTrans->sendCtrlGnd(1+f+32+64);
+
+            ret = checkThree(g);
+            if(!ret) break;
+
+            ret = true;
+        }
+    }
+
+    return  ret;
+}
+
 void Power_CoreThread::workDown()
 {
     this->mTrans->sendCtrlGnd(0);//Reset
@@ -1415,6 +1698,7 @@ void Power_CoreThread::workDown()
     this->mTrans->sendCtrlGnd(1+32+64);//启动L1,L2,L3
     mPro->step = Test_Start;
     bool ret = true;
+<<<<<<< Updated upstream
 
 
     if(mItem->modeId == INSERT_BUSBAR)
@@ -1422,14 +1706,65 @@ void Power_CoreThread::workDown()
         if(ret) ret = mRead->readDev();
         sBoxData *b = &(mBusData->box[mItem->addr - 1]);
         if((b->phaseFlag == mItem->si.si_phaseflag) && (b->loopNum == mItem->si.loopNum))
+=======
+    ret = initDev();
+
+    if (mItem->modeId == BASIC_TYPE) {
+        ret = handleBasicType();
+    }
+    else{
+        if(mItem->modeId == INSERT_BUSBAR)
+>>>>>>> Stashed changes
         {
-            ret = true;
-        }else {
-            QString str = tr("请确认规格书与该工具参数设置的输出位类型、回路数量值是否一致");
-            emit TipSig(str); sleep(2); ret = false; mLogs->updatePro(str, ret);
+            sBoxData *b = &(mBusData->box[mItem->addr - 1]);
+            if((b->phaseFlag == mItem->si.si_phaseflag) && (b->loopNum == mItem->si.loopNum))
+            {
+                ret = true;
+            }else {
+                QString str = tr("请确认规格书与该工具参数设置的输出位类型、回路数量值是否一致");
+                emit TipSig(str); sleep(2); ret = false; mLogs->updatePro(str, ret);
+            }
+        }
+        if(ret){
+            int ver = get_share_mem()->box[mItem->addr-1].version;
+            mPro->softwareVersion = "V" +QString::number(ver/100)+"."+QString::number(ver/10%10)+"."+QString::number(ver%10);
+            ePro->softwareVersion = mPro->softwareVersion;
+
+            BaseErrRange();                                 //检查IN OUT口 网口对比始端箱/插接箱基本信息
+            EnvErrRange();                                  //温度模块检测
+
+            if(mItem->modeId == START_BUSBAR) mRead->SetInfo(mRead->getFilterOid(),"0");
+            else Ctrl_SiRtu::bulid()->setBusbarInsertFilter(0); //设置滤波=0
+
+            if(ret) ret = BreakerTest();                            //断路器测试
+            if(ret) ret = stepVolTest();                            //电压测试///
+
+            // if(ret) ret = mSource->read();
+            // else mPro->result = Test_Fail;
+            // if(ret) ret = checkLoadErrRange();
+
+            if(ret) ret = stepLoadTest();               //电流测试///
+            this->mTrans->sendCtrlGnd(1+32+64);
+            if(ret) ret = factorySet(); sleep(2);                      //清除电能
+
+            QString str = tr("请将电源输出端L1、L2、L3关闭");
+            emit TipSig(str); //emit ImageSig(2);
+
+            mCfg->work_mode = 3;
+            if(ret) emit JudgSig(); //极性测试弹窗///
+
+            if(mItem->modeId == START_BUSBAR)
+            {
+                int temp = mItem->ip.ip_filter;
+                mRead->SetInfo(mRead->getFilterOid(),QString::number(temp));
+            }else {
+                int temp = mItem->si.si_filter;
+                Ctrl_SiRtu::bulid()->setBusbarInsertFilter(temp); //设置滤波
+            }
         }
     }
 
+<<<<<<< Updated upstream
 
     ret = initDev();
     if(ret){
@@ -1469,6 +1804,8 @@ void Power_CoreThread::workDown()
             Ctrl_SiRtu::bulid()->setBusbarInsertFilter(temp); //设置滤波
         }
     }
+=======
+>>>>>>> Stashed changes
 
     if(!ret) mPro->result = Test_Fail;
 
@@ -1489,4 +1826,9 @@ void Power_CoreThread::run()
     mPro->step = Test_Over;
     this->mTrans->sendCtrlGnd(0);
     isRun = false;
+}
+
+void Power_CoreThread::powerOffSlot()
+{
+    this->mTrans->sendCtrlGnd(0); // homeWorkWid连接槽函数，断电
 }

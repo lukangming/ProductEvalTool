@@ -15,15 +15,25 @@ public:
     bool printer();
     void initTestTrans(Test_TransThread *test);
     Test_TransThread *mTrans;
+<<<<<<< Updated upstream
+=======
+
+public slots:
+    void powerOffSlot();
+>>>>>>> Stashed changes
 protected slots:
     void initFunSlot();
 
 signals:
     void noLoadSig();
+    void refreshTableSig();
     void TipSig(QString str);
     void finshSig(bool ret);
     void JudgSig();
     void ImageSig(int value);
+
+    //void updateTableObjSig(sObjData obj, int loopNum);
+
 private slots:
     void noloadHomeSlot(int ret);
 
@@ -77,10 +87,21 @@ protected:
     bool Vol_ctrlThree();
     bool stepLoadTest();
     bool BreakerTest();
+
     QString changeMode(int index);
     void autoSetAddress();
     QString trans(int index);
 
+
+    bool VolCurCtrl(sObjData *,int id);
+    bool VolCurCtrlSigle(sObjData *,int id);
+    void clearObjVolCur(sObjData *);
+    bool checkVolCurErr(sObjData *);
+    bool tryReadVolCur(sObjData *,int id);
+    bool tryReadVolCurSig(sObjData *,int id);
+
+    bool BasicTypeBreakTest(sObjData *);
+    bool handleBasicType();
 private:
     Power_Logs *mLogs;
     Power_DevRead *mRead;

@@ -7,7 +7,11 @@
 
 Dev_Source::Dev_Source(QObject *parent) : Dev_SiRtu(parent)
 {
+<<<<<<< Updated upstream
 //    mRk = new Rk_Serial(this);
+=======
+   mRk = new Rk_Serial(this);
+>>>>>>> Stashed changes
 //    mDev = sDataPacket::bulid()->getDev(0);
 //    init();
 }
@@ -23,7 +27,11 @@ Dev_Source *Dev_Source::bulid(QObject *parent)
 void Dev_Source::initFunSlot()
 {
 //    setModbus(3);
+<<<<<<< Updated upstream
 //    mRk->init(mItem->coms.ser4);
+=======
+   mRk->init(mItem->coms.ser4);
+>>>>>>> Stashed changes
 }
 
 void Dev_Source::init()
@@ -62,19 +70,35 @@ bool Dev_Source::readRk9901()
     }
 #else
     mItem->coms.ser4->setBaudRate(9600);
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     bool ret = mRk->readPacket1(rkIt);
+    qDebug()<<"ret: "<<ret;
     if(ret) {
         sObjData *obj = &(mDev->line);
         for(int i=0; i<3; ++i) {
+<<<<<<< Updated upstream
             obj->vol.value[i] = rkIt.vola[i];
             obj->cur.value[i] = rkIt.cura[i]/10;
             obj->pow[i] = rkIt.powa[i]/1000;//有功功率
+=======
+            obj->source_vol[i] = rkIt.vola[i];
+            obj->source_cur[i] = rkIt.cura[i];
+            obj->pow[i] = rkIt.powa[i];//有功功率
+
+            obj->source_vol[i] = 220000;
+            obj->source_cur[i] = 19000;
+
+>>>>>>> Stashed changes
             // obj->hz[i] = rkIt.hz;
             //            obj->cur.value[i] = rkIt.cur / curUnit;
             //            obj->pow[i] = rkIt.pow / 1000;
             //            obj->hz[i] = rkIt.hz / 100;
             //            obj->pf[i] = rkIt.pf / 10;
         }
+
         obj->size = 3;
     } else {
         QString str = tr("比对源PK9901数据读取失败，质检结束");
@@ -104,7 +128,9 @@ bool Dev_Source::readSiPdu()
 bool Dev_Source::read()
 {
     bool ret = false;
+    qDebug()<<"read start!";
     ret = readRk9901();
+    qDebug()<<"readRk9901 "<<ret;
 //    else {
 //        ret = readSiPdu();
 //    }
