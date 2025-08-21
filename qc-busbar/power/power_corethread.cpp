@@ -1462,7 +1462,7 @@ bool Power_CoreThread::VolCurCtrl(sObjData *obj,int id)
         }
         flag++;
        // qDebug()<<flag;
-        if (flag > 60)
+        if (flag > 50)
         {
             QString str, engStr;
             for (int i = 0; i < loop; i++)
@@ -1487,7 +1487,7 @@ bool Power_CoreThread::VolCurCtrl(sObjData *obj,int id)
             emit TipSig(tr("电压电流检测失败，请检查设备接线状态或误差大小是否需要更改！"));
             return false;
         }
-        QThread::msleep(1);
+        QThread::msleep(1000);
     }
 }
 bool Power_CoreThread::VolCurCtrlSigle(sObjData *obj,int id)
@@ -1544,7 +1544,7 @@ bool Power_CoreThread::VolCurCtrlSigle(sObjData *obj,int id)
             return true;
         }
         flag++;
-        if (flag > 60)
+        if (flag > 50)
         {
             QString str, engStr;
 
@@ -1568,7 +1568,7 @@ bool Power_CoreThread::VolCurCtrlSigle(sObjData *obj,int id)
             return false;
         }
 
-        QThread::msleep(1);
+        QThread::msleep(1000);
     }
 
 
